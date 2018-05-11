@@ -2,14 +2,12 @@ package main
 
 import (
 	// Built-in packages
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"runtime"
 	"strings"

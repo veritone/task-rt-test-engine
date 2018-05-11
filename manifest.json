@@ -1,0 +1,14 @@
+{
+  "engineId": "c17ea304-377c-49b0-b667-2700042f94f3",
+  "url": "https://github.com/veritone/task-rt-test-engine",
+  "category": "face detection",
+  "externalCalls": [],
+  "preferredInputFormat": "application/json",
+  "outputFormats": [
+    "application/json"
+  ],
+  "clusterSize": "small",
+  "initialConcurrency": 50,
+  "maxConcurrency": 50,
+  "engineMode": "chunk"
+}

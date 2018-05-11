@@ -15,3 +15,5 @@
 
 # Ignore vendor folder
 vendor/
+
+task-rt-test-engine

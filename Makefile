@@ -14,24 +14,24 @@ build: deps
 build-dev: deps
 	# Build Docker container
 	env GOOS=linux GOARCH=amd64 go build -a -o $(BINARY_NAME) .
-	docker build --build-arg APP_ENV=dev -t amazon-rekognition-face-service .
+	docker build --build-arg APP_ENV=dev -t rt-test-engine .
 
 .PHONY: build-stage
 build-stage: deps
 	# Build Docker container
 	env GOOS=linux GOARCH=amd64 go build -a -o $(BINARY_NAME) .
-	docker build --build-arg APP_ENV=stage -t amazon-rekognition-face-service .
+	docker build --build-arg APP_ENV=stage -t rt-test-engine .
 
 .PHONY: build-prod
 build-prod: deps
 	# Build Docker container
 	env GOOS=linux GOARCH=amd64 go build -a -o $(BINARY_NAME) .
-	docker build --build-arg APP_ENV=prod -t amazon-rekognition-face-service .
+	docker build --build-arg APP_ENV=prod -t rt-test-engine .
 
 .PHONY: run-docker
 run-docker: build-docker
 	# Run Docker container
-	docker run amazon-rekognition-face-service
+	docker run rt-test-engine
 
 .PHONY: check
 check:
