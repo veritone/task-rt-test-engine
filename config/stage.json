@@ -1,0 +1,13 @@
+{
+  "prometheusPort": 30000,
+  "logFormat": "json",
+  "logLevel": "debug",
+  "engineId": "task-rt-test-engine",
+  "kafka": {
+    "consumerTopic": "chunk_all",
+    "brokers": "kafka1:9092",
+    "producerTopic": "chunk_test",
+    "consumerGroupId": "1"
+  },
+  "veritoneBaseUri": "api.stage.veritone.com"
+}
