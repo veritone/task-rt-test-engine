@@ -320,7 +320,8 @@ func loadConfig(c *models.Config, cf string) error {
 		c.VeritoneBaseUri = baseUri
 	}
 
-	ttlInSec := os.Getenv("END_IF_IDLE_SECS")
+	//Hard code this value to 1 min so other engines are not affected on edge
+	/*ttlInSec := os.Getenv("END_IF_IDLE_SECS")
 	if ttlInSec != "" {
 		ttl, err := time.ParseDuration(ttlInSec + "s")
 		if err != nil {
@@ -330,7 +331,8 @@ func loadConfig(c *models.Config, cf string) error {
 	} else {
 		// 30 min ttl
 		c.TTLinSec = time.Minute * 30
-	}
+	}*/
+	c.TTLinSec = time.Minute
 
 	return nil
 }
