@@ -231,7 +231,9 @@ func generateEngineOutput(chunk messages.MediaChunk) {
 		setChunkStatus(chunk.TaskID, chunk.ChunkUUID, messages.ChunkStatusError, err.Error(), "")
 		return
 	}
-	fmt.Printf("Completed processing chunk: %s task: %s\n", chunk.JobID, chunk.TaskID)
+	ctx.Logger.Infof("Completed processing chunk: %s task: %s\n", chunk.JobID, chunk.TaskID)
+
+	setChunkStatus(chunk.TaskID, chunk.ChunkUUID, messages.ChunkStatusSuccess, "", "")
 }
 
 // listenForSignals waits for SIGINT or SIGTERM to be captured.
