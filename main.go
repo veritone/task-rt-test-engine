@@ -183,6 +183,29 @@ func listenForJob() {
 func generateEngineOutput(chunk messages.MediaChunk) {
 	var series []models.SeriesObject
 
+	var boundingPoly []models.BoundingPoly
+	boundingPolyItem1 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+	boundingPolyItem2 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+	boundingPolyItem3 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+	boundingPolyItem4 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+
+	boundingPoly = append(boundingPoly, boundingPolyItem1);
+	boundingPoly = append(boundingPoly, boundingPolyItem2);
+	boundingPoly = append(boundingPoly, boundingPolyItem3);
+	boundingPoly = append(boundingPoly, boundingPolyItem4);
+
 	//Create a mock face series object for the aggregator
 	face := models.SeriesObject{
 		Start: chunk.StartOffsetMs,
@@ -190,8 +213,12 @@ func generateEngineOutput(chunk messages.MediaChunk) {
 		Object: models.Object{
 			ObjectType: "face",
 			Confidence: 1,
+			Label: "EdgeTestFace" + fmt.Sprint(chunk.ChunkIndex),
+			Uri: "/media-streamer/image/" + fmt.Sprint(chunk.TDOID) + "/2017-12-28T15:53:00?x1=0.78&y1=0.12&x2=0.99&y2=0.12&x3=0.99&y3=0.44&x4=0.78&y4=0.44",
+			BoundingPoly: boundingPoly,
 		},
 	}
+
 	series = append(series, face)
 
 	seriesMap := map[string]interface{}{"series": series}
