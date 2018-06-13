@@ -1,7 +1,7 @@
 {
   "logFormat": "json",
   "logLevel": "debug",
-  "engineId": "task-rt-test-engine",
+  "engineId": "c17ea304-377c-49b0-b667-2700042f94f3",
   "kafka": {
     "consumerTopic": "chunk_all",
     "brokers": "kafka1:9092",
