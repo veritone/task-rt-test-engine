@@ -11,5 +11,5 @@
   "initialConcurrency": 50,
   "maxConcurrency": 50,
   "engineMode": "chunk",
-  "gitCommit": "testcommitsha"
+  "releaseNotes": "git-testcommitsha"
 }
