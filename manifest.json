@@ -10,5 +10,6 @@
   "clusterSize": "small",
   "initialConcurrency": 50,
   "maxConcurrency": 50,
-  "engineMode": "chunk"
+  "engineMode": "chunk",
+  "gitCommit": "testcommitsha"
 }
