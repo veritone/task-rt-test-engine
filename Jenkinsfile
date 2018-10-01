@@ -1,5 +1,5 @@
 #!groovy
 
-@Library(value='jenkins-scripts@master', changelog=false) _
+@Library(value='jenkins-scripts@vda-ukprod', changelog=false) _
 
 veritonePipeline {}
