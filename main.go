@@ -14,6 +14,9 @@ import (
 	"syscall"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
+	"github.com/veritone/go-messaging-lib"
+
 	// Local packages
 	"github.com/veritone/task-rt-test-engine/models"
 
@@ -121,52 +124,32 @@ func listenForJob() {
 			// log the full message for debugging purpose
 			ctx.Logger.Debug(string(item.Payload()))
 
+			msgType, err := messages.GetMsgType(item)
+			if err != nil {
+				errMsg := fmt.Sprintf("Received unknown message: %v", string(item.Payload()))
+				ctx.Logger.Error(errMsg)
+				setChunkStatus("", "", messages.ChunkStatusError, errMsg, "")
+				continue
+			}
+
 			taskID, err := messages.GetTaskID(item)
-			if err != nil || taskID == "" {
+			if err != nil || (taskID == "" && msgType != messages.GenericEventType) {
 				errMsg := fmt.Sprintf("Received message without taskID: %v", string(item.Payload()))
 				ctx.Logger.Error(errMsg)
 				setChunkStatus("", "", messages.ChunkStatusError, errMsg, "")
 				continue
 			}
 
-			msgType, err := messages.GetMsgType(item)
-			if err != nil {
-				errMsg := fmt.Sprintf("Received unknown message: %v", string(item.Payload()))
+			if msgType == messages.MediaChunkType {
+				processMediaChunkMessage(item, taskID)
+			} else if msgType == messages.GenericEventType {
+				processGenericEventMessage(item)
+			} else {
+				errMsg := fmt.Sprintf("Not a media_chunk or a generic_event: %v", string(item.Payload()))
 				ctx.Logger.Error(errMsg)
 				setChunkStatus(taskID, "", messages.ChunkStatusError, errMsg, "")
 				continue
 			}
-
-			if msgType != messages.MediaChunkType {
-				errMsg := fmt.Sprintf("Not a media_chunk: %v", string(item.Payload()))
-				ctx.Logger.Error(errMsg)
-				setChunkStatus(taskID, "", messages.ChunkStatusError, errMsg, "")
-				continue
-			}
-
-			var chunk messages.MediaChunk
-			if err := json.Unmarshal(item.Payload(), &chunk); err != nil {
-				errMsg := fmt.Sprintf("Unable to unmarshal event: %v", err)
-				ctx.Logger.Error(errMsg)
-				setChunkStatus(taskID, "", messages.ChunkStatusError, errMsg, "")
-				continue
-			}
-
-			if chunk.ChunkUUID == "" {
-				errMsg := fmt.Sprintf("Received message without ChunkUUID: %v", string(item.Payload()))
-				ctx.Logger.Error(errMsg)
-				setChunkStatus(taskID, "", messages.ChunkStatusError, errMsg, "")
-				continue
-			}
-
-			if chunk.MimeType != "image/png" && chunk.MimeType != "image/jpeg" {
-				errMsg := fmt.Sprintf("Not an image/png or image/jpeg: %v", chunk.MimeType)
-				ctx.Logger.Warn(errMsg)
-				setChunkStatus(taskID, chunk.ChunkUUID, messages.ChunkStatusIgnored, "", errMsg)
-				continue
-			}
-
-			go generateEngineOutput(chunk)
 
 			// Reset TTL
 			timer.Reset(ctx.Config.TTLinSec)
@@ -180,7 +163,33 @@ func listenForJob() {
 	}
 }
 
-func generateEngineOutput(chunk messages.MediaChunk) {
+func processMediaChunkMessage(item messaging.Event, taskID string) {
+	var chunk messages.MediaChunk
+	if err := json.Unmarshal(item.Payload(), &chunk); err != nil {
+		errMsg := fmt.Sprintf("Unable to unmarshal event: %v", err)
+		ctx.Logger.Error(errMsg)
+		setChunkStatus(taskID, "", messages.ChunkStatusError, errMsg, "")
+		return
+	}
+
+	if chunk.ChunkUUID == "" {
+		errMsg := fmt.Sprintf("Received message without ChunkUUID: %v", string(item.Payload()))
+		ctx.Logger.Error(errMsg)
+		setChunkStatus(taskID, "", messages.ChunkStatusError, errMsg, "")
+		return
+	}
+
+	if chunk.MimeType != "image/png" && chunk.MimeType != "image/jpeg" {
+		errMsg := fmt.Sprintf("Not an image/png or image/jpeg: %v", chunk.MimeType)
+		ctx.Logger.Warn(errMsg)
+		setChunkStatus(taskID, chunk.ChunkUUID, messages.ChunkStatusIgnored, "", errMsg)
+		return
+	}
+
+	go generateEngineOutputForMediaChunk(chunk)
+}
+
+func generateEngineOutputForMediaChunk(chunk messages.MediaChunk) {
 	var series []models.SeriesObject
 
 	var boundingPoly []models.BoundingPoly
@@ -201,20 +210,19 @@ func generateEngineOutput(chunk messages.MediaChunk) {
 		Y: 0.2,
 	}
 
-	boundingPoly = append(boundingPoly, boundingPolyItem1);
-	boundingPoly = append(boundingPoly, boundingPolyItem2);
-	boundingPoly = append(boundingPoly, boundingPolyItem3);
-	boundingPoly = append(boundingPoly, boundingPolyItem4);
-
+	boundingPoly = append(boundingPoly, boundingPolyItem1)
+	boundingPoly = append(boundingPoly, boundingPolyItem2)
+	boundingPoly = append(boundingPoly, boundingPolyItem3)
+	boundingPoly = append(boundingPoly, boundingPolyItem4)
 	//Create a mock face series object for the aggregator
 	face := models.SeriesObject{
 		Start: chunk.StartOffsetMs,
 		End:   chunk.EndOffsetMs,
 		Object: models.Object{
-			ObjectType: "face",
-			Confidence: 1,
-			Label: "EdgeTestFace" + fmt.Sprint(chunk.ChunkIndex),
-			Uri: "/media-streamer/image/" + fmt.Sprint(chunk.TDOID) + "/2017-12-28T15:53:00?x1=0.78&y1=0.12&x2=0.99&y2=0.12&x3=0.99&y3=0.44&x4=0.78&y4=0.44",
+			ObjectType:   "face",
+			Confidence:   1,
+			Label:        "EdgeTestFace" + fmt.Sprint(chunk.ChunkIndex),
+			Uri:          "/media-streamer/image/" + fmt.Sprint(chunk.TDOID) + "/2017-12-28T15:53:00?x1=0.78&y1=0.12&x2=0.99&y2=0.12&x3=0.99&y3=0.44&x4=0.78&y4=0.44",
 			BoundingPoly: boundingPoly,
 		},
 	}
@@ -261,6 +269,109 @@ func generateEngineOutput(chunk messages.MediaChunk) {
 	ctx.Logger.Infof("Completed processing chunk: %s task: %s\n", chunk.JobID, chunk.TaskID)
 
 	setChunkStatus(chunk.TaskID, chunk.ChunkUUID, messages.ChunkStatusSuccess, "", "")
+}
+
+func processGenericEventMessage(item messaging.Event) {
+	var genericEvent messages.GenericEvent
+	if err := json.Unmarshal(item.Payload(), &genericEvent); err != nil {
+		errMsg := fmt.Sprintf("Unable to unmarshal event: %v", err)
+		ctx.Logger.Error(errMsg)
+		setChunkStatus("", "", messages.ChunkStatusError, errMsg, "")
+		return
+	}
+
+	go generateEngineOutputForGenericEvent(genericEvent)
+}
+
+func generateEngineOutputForGenericEvent(genericEvent messages.GenericEvent) {
+
+	if len(genericEvent.Destinations) < 1 {
+		setChunkStatus("", "", messages.ChunkStatusError, "no TaskID in the Destinations array", "")
+		return
+	}
+
+	taskID := genericEvent.Destinations[0].TaskID
+
+	var series []models.SeriesObject
+
+	var boundingPoly []models.BoundingPoly
+	boundingPolyItem1 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+	boundingPolyItem2 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+	boundingPolyItem3 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+	boundingPolyItem4 := models.BoundingPoly{
+		X: 0.1,
+		Y: 0.2,
+	}
+
+	boundingPoly = append(boundingPoly, boundingPolyItem1)
+	boundingPoly = append(boundingPoly, boundingPolyItem2)
+	boundingPoly = append(boundingPoly, boundingPolyItem3)
+	boundingPoly = append(boundingPoly, boundingPolyItem4)
+
+	//Create a mock face series object for the aggregator
+	face := models.SeriesObject{
+		Start: 1,
+		End:   10,
+		Object: models.Object{
+			ObjectType:   "face",
+			Confidence:   1,
+			Label:        "EdgeTestFace" + fmt.Sprint(genericEvent.CorrelationID),
+			Uri:          "/media-streamer/image/" + fmt.Sprint(genericEvent.CorrelationID) + "/2017-12-28T15:53:00?x1=0.78&y1=0.12&x2=0.99&y2=0.12&x3=0.99&y3=0.44&x4=0.78&y4=0.44",
+			BoundingPoly: boundingPoly,
+		},
+	}
+
+	series = append(series, face)
+
+	seriesMap := map[string]interface{}{"series": series}
+	seriesMapJson, err := json.Marshal(&seriesMap)
+	if err != nil {
+		setChunkStatus(taskID, "", messages.ChunkStatusError, err.Error(), "")
+		return
+	}
+
+	result := messages.EngineOutput{
+		Type:          messages.EngineOutputType,
+		TimestampUTC:  time.Now().UnixNano() / int64(time.Millisecond),
+		TaskID:        taskID,
+		TDOID:         uuidv4(),
+		CorrelationID: genericEvent.CorrelationID,
+		JobID:         genericEvent.JobID,
+		MIMEType:      "video/mp4",
+		StartOffsetMs: 1,
+		EndOffsetMs:   100,
+		Content:       string(seriesMapJson),
+	}
+
+	resultJSON, err := json.Marshal(&result)
+	if err != nil {
+		setChunkStatus(taskID, "", messages.ChunkStatusError, err.Error(), "")
+		return
+	}
+
+	msg, err := kafka.NewMessage(taskID, resultJSON)
+	if err != nil {
+		setChunkStatus(taskID, "", messages.ChunkStatusError, err.Error(), "")
+		return
+	}
+
+	err = ctx.Producer.Produce(context.Background(), msg)
+	if err != nil {
+		setChunkStatus(taskID, "", messages.ChunkStatusError, err.Error(), "")
+		return
+	}
+	ctx.Logger.Infof("Completed processing chunk: %s task: %s\n", genericEvent.JobID, taskID)
+
+	setChunkStatus(taskID, "", messages.ChunkStatusSuccess, "", "")
 }
 
 // listenForSignals waits for SIGINT or SIGTERM to be captured.
@@ -398,4 +509,12 @@ func setChunkStatus(taskID string, chunkUUID string, status messages.ChunkStatus
 		ctx.Logger.Errorf("failed to produce Kafka message: %v", err)
 		return
 	}
+}
+
+func uuidv4() string {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return "12345678-90ab-cdef-1234-567809ab"
+	}
+	return id.String()
 }
