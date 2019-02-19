@@ -70,11 +70,11 @@ vendors:
 - path: github.com/urfave/cli
   rev: 8e01ec4cd3e2d84ab2fe90d8210528ffbb06d8ff
 - path: github.com/veritone/edge-messages
-  rev: 65db00b4408f99175ef12dac3760b4605153a77e
+  rev: 7bab9429018b271a8278580b3061b193282b7add
 - path: github.com/veritone/go-logger
   rev: a2664bbfc1944d64f9438f438ee23bba3450f26a
 - path: github.com/veritone/go-messaging-lib
-  rev: f074c59cd8856251a59fde2a42a07d944c0ceb36
+  rev: 8931dee31e634654f1ace8bcdc2856ec8e2a1766
 - path: golang.org/x/crypto
   rev: 2d027ae1dddd4694d54f7a8b6cbe78dca8720226
 - path: golang.org/x/net
