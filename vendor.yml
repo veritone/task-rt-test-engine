@@ -74,7 +74,7 @@ vendors:
 - path: github.com/veritone/go-logger
   rev: a2664bbfc1944d64f9438f438ee23bba3450f26a
 - path: github.com/veritone/go-messaging-lib
-  rev: 8931dee31e634654f1ace8bcdc2856ec8e2a1766
+  rev: 9115b7be6804547e2024a66b67b65fc6a90d7534
 - path: golang.org/x/crypto
   rev: 2d027ae1dddd4694d54f7a8b6cbe78dca8720226
 - path: golang.org/x/net
