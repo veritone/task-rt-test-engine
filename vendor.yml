@@ -1,6 +1,6 @@
 vendors:
 - path: github.com/Shopify/sarama
-  rev: 3c763ff04e6daa57d4a4614e5bcd908f2527c989
+  rev: ec843464b50d4c8b56403ec9d589cf41ea30e722
 - path: github.com/Shopify/toxiproxy
   rev: afe6edd4262deeee25b5287bd14e47c3736b1d9e
 - path: github.com/aws/aws-sdk-go
@@ -8,7 +8,7 @@ vendors:
 - path: github.com/beorn7/perks
   rev: 3a771d992973f24aa725d07868b467d1ddfceafb
 - path: github.com/bsm/sarama-cluster
-  rev: d98592677c0aa08d8aafb882d344fb461682b722
+  rev: c618e605e15c0d7535f6c96ff8efbb0dba4fd66c
 - path: github.com/davecgh/go-spew
   rev: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
 - path: github.com/eapache/go-resiliency
