@@ -3,9 +3,9 @@
     "logLevel": "debug",
     "engineId": "c17ea304-377c-49b0-b667-2700042f94f3",
     "kafka": {
-      "consumerTopic": "chunk_all",
+      "consumerTopic": "chunk_c17ea304-377c-49b0-b667-2700042f94f3",
       "brokers": "kafka1:9092",
-      "producerTopic": "chunk_test",
+      "producerTopic": "chunk_all",
       "consumerGroupId": "1"
     },
     "veritoneBaseUri": "api.aws-dev.veritone.com"
