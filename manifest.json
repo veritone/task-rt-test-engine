@@ -3,7 +3,11 @@
   "url": "https://github.com/veritone/task-rt-test-engine",
   "category": "face detection",
   "externalCalls": [],
-  "preferredInputFormat": "application/json",
+  "preferredInputFormat": "image/jpeg",
+  "supportedInputFormats":[
+    "image/jpeg",
+    "image/png"
+  ],
   "outputFormats": [
     "application/json"
   ],

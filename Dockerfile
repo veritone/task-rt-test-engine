@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM ubuntu:16.04
 
 ARG APP_ENV=local
 ENV APP_ENV ${APP_ENV}

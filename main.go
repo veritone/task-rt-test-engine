@@ -18,7 +18,7 @@ import (
 	"github.com/veritone/task-rt-test-engine/models"
 
 	// Veritone packages
-	"github.com/veritone/edge-messages"
+	messages "github.com/veritone/edge-messages"
 	vLogger "github.com/veritone/go-logger" // Veritone Go logger
 	"github.com/veritone/go-messaging-lib/kafka"
 
@@ -201,20 +201,20 @@ func generateEngineOutput(chunk messages.MediaChunk) {
 		Y: 0.2,
 	}
 
-	boundingPoly = append(boundingPoly, boundingPolyItem1);
-	boundingPoly = append(boundingPoly, boundingPolyItem2);
-	boundingPoly = append(boundingPoly, boundingPolyItem3);
-	boundingPoly = append(boundingPoly, boundingPolyItem4);
+	boundingPoly = append(boundingPoly, boundingPolyItem1)
+	boundingPoly = append(boundingPoly, boundingPolyItem2)
+	boundingPoly = append(boundingPoly, boundingPolyItem3)
+	boundingPoly = append(boundingPoly, boundingPolyItem4)
 
 	//Create a mock face series object for the aggregator
 	face := models.SeriesObject{
 		Start: chunk.StartOffsetMs,
 		End:   chunk.EndOffsetMs,
 		Object: models.Object{
-			ObjectType: "face",
-			Confidence: 1,
-			Label: "EdgeTestFace" + fmt.Sprint(chunk.ChunkIndex),
-			Uri: "/media-streamer/image/" + fmt.Sprint(chunk.TDOID) + "/2017-12-28T15:53:00?x1=0.78&y1=0.12&x2=0.99&y2=0.12&x3=0.99&y3=0.44&x4=0.78&y4=0.44",
+			ObjectType:   "face",
+			Confidence:   1,
+			Label:        "EdgeTestFace" + fmt.Sprint(chunk.ChunkIndex),
+			Uri:          "/media-streamer/image/" + fmt.Sprint(chunk.TDOID) + "/2017-12-28T15:53:00?x1=0.78&y1=0.12&x2=0.99&y2=0.12&x3=0.99&y3=0.44&x4=0.78&y4=0.44",
 			BoundingPoly: boundingPoly,
 		},
 	}
@@ -258,7 +258,7 @@ func generateEngineOutput(chunk messages.MediaChunk) {
 		setChunkStatus(chunk.TaskID, chunk.ChunkUUID, messages.ChunkStatusError, err.Error(), "")
 		return
 	}
-	ctx.Logger.Infof("Completed processing chunk: %s task: %s\n", chunk.JobID, chunk.TaskID)
+	ctx.Logger.Infof("The engine output sent. Completed processing chunk: %s task: %s\n", chunk.JobID, chunk.TaskID)
 
 	setChunkStatus(chunk.TaskID, chunk.ChunkUUID, messages.ChunkStatusSuccess, "", "")
 }
@@ -348,7 +348,7 @@ func loadConfig(c *models.Config, cf string) error {
 	}
 
 	//Hard code this value to 1 min so other engines are not affected on edge
-	/*ttlInSec := os.Getenv("END_IF_IDLE_SECS")
+	ttlInSec := os.Getenv("END_IF_IDLE_SECS")
 	if ttlInSec != "" {
 		ttl, err := time.ParseDuration(ttlInSec + "s")
 		if err != nil {
@@ -358,8 +358,7 @@ func loadConfig(c *models.Config, cf string) error {
 	} else {
 		// 30 min ttl
 		c.TTLinSec = time.Minute * 30
-	}*/
-	c.TTLinSec = time.Minute
+	}
 
 	return nil
 }
